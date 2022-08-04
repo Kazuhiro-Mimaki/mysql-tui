@@ -1,27 +1,59 @@
 package mysql
 
 import (
+	"database/sql"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 )
 
-type Country struct {
-	Id        int
-	Iso, Name string
+type TableColumn struct {
+	columnNames []string
+	records     [][]*string
 }
 
 func Driver() {
-	db, err := sqlx.Connect("mysql", "root@(localhost:3306)/sample_country") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
+	db, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer db.Close()
+
+	query := "SELECT * FROM country"
+
+	queryResult, err := db.Query(query)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	countries := []Country{}
+	columns, err := queryResult.Columns()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	db.Select(&countries, "SELECT id, iso, name FROM country")
+	var records = [][]*string{}
+	for queryResult.Next() {
+		rows := make([]*string, len(columns))
+		rowPointers := make([]interface{}, len(columns))
+		for i := range rows {
+			rowPointers[i] = &rows[i]
+		}
 
-	log.Println(countries)
+		err = queryResult.Scan(rowPointers...)
+		if err != nil {
+			return
+		}
+
+		records = append(records, rows)
+	}
+
+	tableColumn := TableColumn{
+		columnNames: columns,
+		records:     records,
+	}
+
+	log.Println(tableColumn)
 }
