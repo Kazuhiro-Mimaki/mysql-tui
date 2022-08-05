@@ -5,10 +5,36 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/rivo/tview"
 )
 
-func Driver() [][]*string {
+func GetTables() []string {
+	db, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
+	if err != nil {
+		log.Println(err)
+	}
+	defer db.Close()
+
+	query := "SHOW TABLES"
+
+	row, err := db.Query(query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	tables := []string{}
+	for row.Next() {
+		var tableName string
+		err = row.Scan(&tableName)
+		if err != nil {
+			log.Println(err)
+		}
+		tables = append(tables, tableName)
+	}
+
+	return tables
+}
+
+func GetRecords() [][]*string {
 	db, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
 	if err != nil {
 		log.Println(err)
@@ -45,28 +71,11 @@ func Driver() [][]*string {
 		// scan by a row, and set to pointers
 		err = row.Scan(fieldsPointers...)
 		if err != nil {
+			log.Println(err)
 		}
 
 		tableData = append(tableData, fields)
 	}
 
 	return tableData
-}
-
-func ShowData(viewTable *tview.Table, tableData [][]*string) {
-	for i, row := range tableData {
-		for j, col := range row {
-			var cellValue string
-
-			if col != nil {
-				cellValue = *col
-			}
-
-			viewTable.SetCell(
-				i, j,
-				tview.NewTableCell(cellValue),
-			)
-		}
-	}
-	viewTable.SetSelectable(true, true)
 }

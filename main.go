@@ -9,7 +9,9 @@ import (
 )
 
 type TUI struct {
-	App *tview.Application
+	App           *tview.Application
+	DatabaseTrees *tview.TreeView
+	TableRecords  *tview.Table
 }
 
 func newBox(title string) *tview.Box {
@@ -28,38 +30,63 @@ func (tui *TUI) setFocus(p tview.Primitive) {
 	})
 }
 
-func main() {
-	tui := &TUI{
-		App: tview.NewApplication(),
+func setDatabaseTrees(tables []string) *tview.TreeView {
+	root := tview.NewTreeNode("root")
+	databaseTrees := tview.NewTreeView().SetRoot(root).SetCurrentNode(root)
+
+	for _, table := range tables {
+		node := tview.NewTreeNode(table)
+		root.AddChild(node)
 	}
 
-	tableData := mysql.Driver()
-	viewTable := tview.NewTable()
+	return databaseTrees
+}
 
-	mysql.ShowData(viewTable, tableData)
+func setTableRecords(tableData [][]*string) *tview.Table {
+	table := tview.NewTable()
 
-	list := tview.NewList().
-		AddItem("List item 1", "Some explanatory text", 'a', nil).
-		AddItem("List item 2", "Some explanatory text", 'b', nil).
-		AddItem("List item 3", "Some explanatory text", 'c', nil).
-		AddItem("List item 4", "Some explanatory text", 'd', nil).
-		AddItem("Quit", "Press to exit", 'q', func() {
-			tui.App.Stop()
-		})
+	for i, row := range tableData {
+		for j, col := range row {
+			var cellValue string
+
+			if col != nil {
+				cellValue = *col
+			}
+
+			table.SetCell(
+				i, j,
+				tview.NewTableCell(cellValue),
+			)
+		}
+	}
+	table.SetSelectable(true, true)
+
+	return table
+}
+
+func main() {
+	tables := mysql.GetTables()
+	tableData := mysql.GetRecords()
+
+	tui := &TUI{
+		App:           tview.NewApplication(),
+		DatabaseTrees: setDatabaseTrees(tables),
+		TableRecords:  setTableRecords(tableData),
+	}
 
 	rightFlex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(newBox("some query"), 0, 1, false).
-		AddItem(viewTable, 0, 11, false)
+		AddItem(newBox("Query Input"), 0, 1, false).
+		AddItem(tui.TableRecords, 0, 11, false)
 
 	flex := tview.NewFlex().
 		// tview.Primitive, fixedSize int, proportion int, focus bool
-		AddItem(list, 0, 1, false).
+		AddItem(tui.DatabaseTrees, 0, 1, false).
 		AddItem(rightFlex, 0, 7, false)
 
 	tui.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyTab:
-			tui.setFocus(viewTable)
+			tui.setFocus(tui.TableRecords)
 		}
 		return event
 	})
