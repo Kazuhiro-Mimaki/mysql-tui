@@ -5,55 +5,68 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/rivo/tview"
 )
 
-type TableColumn struct {
-	columnNames []string
-	records     [][]*string
-}
-
-func Driver() {
+func Driver() [][]*string {
 	db, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
 	if err != nil {
 		log.Println(err)
-		return
 	}
 	defer db.Close()
 
 	query := "SELECT * FROM country"
 
-	queryResult, err := db.Query(query)
+	row, err := db.Query(query)
 	if err != nil {
 		log.Println(err)
-		return
 	}
 
-	columns, err := queryResult.Columns()
+	cols, err := row.Columns()
 	if err != nil {
 		log.Println(err)
-		return
 	}
 
-	var records = [][]*string{}
-	for queryResult.Next() {
-		rows := make([]*string, len(columns))
-		rowPointers := make([]interface{}, len(columns))
-		for i := range rows {
-			rowPointers[i] = &rows[i]
+	var colsNames []*string
+	for _, col := range cols {
+		colName := col
+		colsNames = append(colsNames, &colName)
+	}
+
+	var tableData = [][]*string{}
+	tableData = append(tableData, colsNames)
+	for row.Next() {
+		fields := make([]*string, len(cols))
+		fieldsPointers := make([]interface{}, len(cols))
+		for i := range fields {
+			fieldsPointers[i] = &fields[i]
 		}
 
-		err = queryResult.Scan(rowPointers...)
+		// scan by a row, and set to pointers
+		err = row.Scan(fieldsPointers...)
 		if err != nil {
-			return
 		}
 
-		records = append(records, rows)
+		tableData = append(tableData, fields)
 	}
 
-	tableColumn := TableColumn{
-		columnNames: columns,
-		records:     records,
-	}
+	return tableData
+}
 
-	log.Println(tableColumn)
+func ShowData(viewTable *tview.Table, tableData [][]*string) {
+	for i, row := range tableData {
+		for j, col := range row {
+			var cellValue string
+
+			if col != nil {
+				cellValue = *col
+			}
+
+			viewTable.SetCell(
+				i, j,
+				tview.NewTableCell(cellValue),
+			)
+		}
+	}
+	viewTable.SetSelectable(true, true)
 }
