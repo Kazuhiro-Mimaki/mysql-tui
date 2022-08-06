@@ -16,7 +16,7 @@ type IDatabaase interface {
 	ShowDatabases() []string
 	ShowTables(database string) []string
 	GetRecords(table string) [][]*string
-	useTable(database string)
+	changeTable(database string)
 }
 
 // Initialize mysql
@@ -48,15 +48,17 @@ func (mysql *MySQL) ShowDatabases() []string {
 	return databases
 }
 
-func (mysql *MySQL) useTable(database string) {
-}
-
-func (mysql *MySQL) ShowTables(database string) []string {
+func (mysql *MySQL) changeTable(database string) {
 	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database))
 	if err != nil {
 		log.Println(err)
 	}
+
 	mysql.pool = pool
+}
+
+func (mysql *MySQL) ShowTables(database string) []string {
+	mysql.changeTable(database)
 
 	row, err := mysql.pool.Query("SHOW TABLES")
 	if err != nil {
