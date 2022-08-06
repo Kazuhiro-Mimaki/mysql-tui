@@ -12,16 +12,15 @@ type TableGrid struct {
 
 // Initialize table grid
 func NewTableGrid(database mysql.IDatabaase) *TableGrid {
-	tables := database.ShowTables()
-
 	table := tview.NewTable()
-	table.SetSelectable(true, true).SetTitle("Records").SetBorder(true)
+
+	table.SetSelectable(true, true)
+	table.SetTitle("Records")
+	table.SetBorder(true)
 
 	tableGrid := &TableGrid{
 		Records: table,
 	}
-
-	tableGrid.SetTableGrid(tables[0], database)
 
 	return tableGrid
 }

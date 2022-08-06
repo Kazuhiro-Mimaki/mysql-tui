@@ -17,14 +17,15 @@ type TUI struct {
 	mysql *mysql.MySQL
 
 	// view components
-	DatabaseTree *ui.DatabaseTree
-	TableGrid    *ui.TableGrid
+	DatabaseDropDown *ui.DatabaseDropDown
+	TableList        *ui.TableList
+	TableGrid        *ui.TableGrid
 }
 
 func main() {
 	tui := NewTui()
 
-	flex := flex.NewFlex(tui.DatabaseTree.TreeView, tview.NewBox().SetBorder(true).SetTitle("Query Input"), tui.TableGrid.Records)
+	flex := flex.NewFlex(tui.DatabaseDropDown.DropDown, tui.TableList.List, tview.NewBox().SetBorder(true).SetTitle("Query Input"), tui.TableGrid.Records)
 
 	tui.setEvent()
 
@@ -36,16 +37,25 @@ func main() {
 func NewTui() *TUI {
 	tui := &TUI{
 		App:   tview.NewApplication(),
-		mysql: mysql.NewMySQL(),
+		mysql: mysql.NewMySQL(""),
 	}
 
-	tui.DatabaseTree = ui.NewDatabaseTree(tui.mysql)
+	databases := tui.mysql.ShowDatabases()
+
+	tui.DatabaseDropDown = ui.NewDatabaseDropDown(tui.mysql)
+	tui.TableList = ui.NewTableList(databases[0], tui.mysql)
 	tui.TableGrid = ui.NewTableGrid(tui.mysql)
 
-	// when the table selected, update the view of table grid
-	tui.DatabaseTree.TreeView.SetSelectedFunc(func(node *tview.TreeNode) {
-		tui.DatabaseTree.TreeView.SetCurrentNode(node)
-		tui.updateTable(tui.DatabaseTree.TreeView.GetCurrentNode().GetText())
+	// when the databases selected, update the table list
+	tui.DatabaseDropDown.DropDown.SetSelectedFunc(func(text string, index int) {
+		tui.selectDatabase(text)
+		tui.setFocus(tui.TableList.List)
+	})
+
+	// when the table selected, update the table records
+	tui.TableList.List.SetSelectedFunc(func(int, string, string, rune) {
+		selectedTable, _ := tui.TableList.List.GetItemText(tui.TableList.List.GetCurrentItem())
+		tui.updateTable(selectedTable)
 	})
 
 	return tui
@@ -60,6 +70,12 @@ func (tui *TUI) queueUpdateDraw(f func()) {
 func (tui *TUI) setFocus(p tview.Primitive) {
 	tui.queueUpdateDraw(func() {
 		tui.App.SetFocus(p)
+	})
+}
+
+func (tui *TUI) selectDatabase(selectedDB string) {
+	tui.queueUpdateDraw(func() {
+		tui.TableList.SetTableList(selectedDB, tui.mysql)
 	})
 }
 

@@ -13,13 +13,15 @@ type MySQL struct {
 }
 
 type IDatabaase interface {
-	ShowTables() []string
+	ShowDatabases() []string
+	ShowTables(database string) []string
 	GetRecords(table string) [][]*string
+	useTable(database string)
 }
 
 // Initialize mysql
-func NewMySQL() *MySQL {
-	pool, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
+func NewMySQL(database string) *MySQL {
+	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database)) // "dbUser:dbPassword@(dbURL:PORT)/dbName"
 	if err != nil {
 		log.Println(err)
 	}
@@ -27,7 +29,35 @@ func NewMySQL() *MySQL {
 	return &MySQL{pool: pool}
 }
 
-func (mysql *MySQL) ShowTables() []string {
+func (mysql *MySQL) ShowDatabases() []string {
+	row, err := mysql.pool.Query("SHOW DATABASES")
+	if err != nil {
+		log.Println(err)
+	}
+
+	databases := []string{}
+	for row.Next() {
+		var databaseName string
+		err = row.Scan(&databaseName)
+		if err != nil {
+			log.Println(err)
+		}
+		databases = append(databases, databaseName)
+	}
+
+	return databases
+}
+
+func (mysql *MySQL) useTable(database string) {
+}
+
+func (mysql *MySQL) ShowTables(database string) []string {
+	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database))
+	if err != nil {
+		log.Println(err)
+	}
+	mysql.pool = pool
+
 	row, err := mysql.pool.Query("SHOW TABLES")
 	if err != nil {
 		log.Println(err)
