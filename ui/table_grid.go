@@ -3,6 +3,7 @@ package ui
 import (
 	"tui-dbms/database/mysql"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -36,14 +37,25 @@ func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
 	for i, row := range tableData {
 		for j, col := range row {
 			var cellValue string
+			var cellColor = tcell.ColorWhite
+			var notSelectable = false
 
 			if col != nil {
 				cellValue = *col
 			}
 
+			// top(column names)
+			if i == 0 {
+				cellColor = tcell.ColorNavy
+			}
+
 			tg.Records.SetCell(
 				i, j,
-				tview.NewTableCell(cellValue),
+				&tview.TableCell{
+					Text:          cellValue,
+					Color:         cellColor,
+					NotSelectable: notSelectable,
+				},
 			)
 		}
 	}
