@@ -18,6 +18,9 @@ func NewTableGrid(database mysql.IDatabaase) *TableGrid {
 	table.SetTitle("Records")
 	table.SetBorder(true)
 
+	// fix column names
+	table.SetFixed(1, 0)
+
 	tableGrid := &TableGrid{
 		Records: table,
 	}
