@@ -29,9 +29,9 @@ func NewTableGrid(database mysql.IDatabaase) *TableGrid {
 }
 
 func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
-	tableData := database.GetRecords(table)
+	tg.ResetRecords()
 
-	tg.Records.Clear()
+	tableData := database.GetRecords(table)
 
 	for i, row := range tableData {
 		for j, col := range row {
@@ -47,4 +47,9 @@ func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
 			)
 		}
 	}
+}
+
+// clear records and scroll to beginning
+func (tg *TableGrid) ResetRecords() {
+	tg.Records.Clear().ScrollToBeginning()
 }
