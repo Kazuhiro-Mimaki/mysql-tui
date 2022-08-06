@@ -1,31 +1,16 @@
-package main
+package flex
 
-import (
-	"tui-dbms/ui/treeview"
+import "github.com/rivo/tview"
 
-	"github.com/rivo/tview"
-)
+func NewFlex(dbTreeView, sqlInputField, tableGrid tview.Primitive) *tview.Flex {
+	rightFlex := tview.NewFlex()
+	rightFlex.SetDirection(tview.FlexRow)
+	rightFlex.AddItem(sqlInputField, 0, 1, false) // tview.Primitive, fixedSize int, proportion int, focus bool
+	rightFlex.AddItem(tableGrid, 0, 15, false)
 
-func FlexUi(viewTable *tview.Table) {
-	app := tview.NewApplication()
-	flex := tview.NewFlex().
-		// tview.Primitive, fixedSize int, proportion int, focus bool
-		AddItem(newBox("database/table tree"), 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(newBox("some query"), 0, 1, false).
-			AddItem(viewTable, 0, 11, false),
-			0, 7, false)
-	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
-		panic(err)
-	}
-	treeview.TreeViewUi()
-}
+	flex := tview.NewFlex()
+	flex.AddItem(dbTreeView, 0, 1, false)
+	flex.AddItem(rightFlex, 0, 7, false)
 
-func newBox(title string) *tview.Box {
-	return tview.NewBox().SetBorder(true).SetTitle(title)
-}
-
-func main() {
-	table := tview.NewTable()
-	FlexUi(table)
+	return flex
 }
