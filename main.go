@@ -3,9 +3,8 @@ package main
 import (
 	"log"
 	"tui-dbms/database/mysql"
-	db_tree "tui-dbms/ui/dbtree"
+	"tui-dbms/ui"
 	"tui-dbms/ui/flex"
-	table_grid "tui-dbms/ui/tablegrid"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -18,8 +17,8 @@ type TUI struct {
 	mysql *mysql.MySQL
 
 	// view components
-	DatabaseTree *db_tree.DatabaseTree
-	TableGrid    *table_grid.TableGrid
+	DatabaseTree *ui.DatabaseTree
+	TableGrid    *ui.TableGrid
 }
 
 func main() {
@@ -40,8 +39,8 @@ func NewTui() *TUI {
 		mysql: mysql.NewMySQL(),
 	}
 
-	tui.DatabaseTree = db_tree.NewDatabaseTree(tui.mysql)
-	tui.TableGrid = table_grid.NewTableGrid(tui.mysql)
+	tui.DatabaseTree = ui.NewDatabaseTree(tui.mysql)
+	tui.TableGrid = ui.NewTableGrid(tui.mysql)
 
 	// when the table selected, update the view of table grid
 	tui.DatabaseTree.TreeView.SetSelectedFunc(func(node *tview.TreeNode) {

@@ -1,4 +1,4 @@
-package db_tree
+package ui
 
 import (
 	"tui-dbms/database/mysql"

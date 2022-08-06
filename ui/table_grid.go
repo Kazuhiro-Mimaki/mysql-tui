@@ -1,4 +1,4 @@
-package table_grid
+package ui
 
 import (
 	"tui-dbms/database/mysql"
