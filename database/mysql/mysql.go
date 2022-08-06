@@ -2,21 +2,28 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetTables() []string {
-	db, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
+type MySQL struct {
+	pool *sql.DB
+}
+
+// Initialize mysql
+func NewMySQL() *MySQL {
+	pool, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
 	if err != nil {
 		log.Println(err)
 	}
-	defer db.Close()
 
-	query := "SHOW TABLES"
+	return &MySQL{pool: pool}
+}
 
-	row, err := db.Query(query)
+func (mysql *MySQL) ShowTables() []string {
+	row, err := mysql.pool.Query("SHOW TABLES")
 	if err != nil {
 		log.Println(err)
 	}
@@ -34,16 +41,8 @@ func GetTables() []string {
 	return tables
 }
 
-func GetRecords() [][]*string {
-	db, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
-	if err != nil {
-		log.Println(err)
-	}
-	defer db.Close()
-
-	query := "SELECT * FROM country"
-
-	row, err := db.Query(query)
+func (mysql *MySQL) GetRecords(table string) [][]*string {
+	row, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s", table))
 	if err != nil {
 		log.Println(err)
 	}
@@ -59,8 +58,9 @@ func GetRecords() [][]*string {
 		colsNames = append(colsNames, &colName)
 	}
 
-	var tableData = [][]*string{}
-	tableData = append(tableData, colsNames)
+	var records = [][]*string{}
+	// set column names at first
+	records = append(records, colsNames)
 	for row.Next() {
 		fields := make([]*string, len(cols))
 		fieldsPointers := make([]interface{}, len(cols))
@@ -74,8 +74,8 @@ func GetRecords() [][]*string {
 			log.Println(err)
 		}
 
-		tableData = append(tableData, fields)
+		records = append(records, fields)
 	}
 
-	return tableData
+	return records
 }
