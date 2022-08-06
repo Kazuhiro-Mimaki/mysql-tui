@@ -1,14 +1,35 @@
 package table_grid
 
-import "github.com/rivo/tview"
+import (
+	"tui-dbms/database/mysql"
+
+	"github.com/rivo/tview"
+)
 
 type TableGrid struct {
 	Records *tview.Table
 }
 
 // Initialize table grid
-func NewTableGrid(tableData [][]*string) *TableGrid {
+func NewTableGrid(database mysql.IDatabaase) *TableGrid {
+	tables := database.ShowTables()
+
 	table := tview.NewTable()
+	table.SetSelectable(true, true).SetTitle("Records").SetBorder(true)
+
+	tableGrid := &TableGrid{
+		Records: table,
+	}
+
+	tableGrid.SetTableGrid(tables[0], database)
+
+	return tableGrid
+}
+
+func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
+	tableData := database.GetRecords(table)
+
+	tg.Records.Clear()
 
 	for i, row := range tableData {
 		for j, col := range row {
@@ -18,18 +39,10 @@ func NewTableGrid(tableData [][]*string) *TableGrid {
 				cellValue = *col
 			}
 
-			table.SetCell(
+			tg.Records.SetCell(
 				i, j,
 				tview.NewTableCell(cellValue),
 			)
 		}
-	}
-
-	table.SetTitle("Records")
-	table.SetBorder(true)
-	table.SetSelectable(true, true)
-
-	return &TableGrid{
-		Records: table,
 	}
 }

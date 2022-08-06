@@ -1,6 +1,8 @@
 package db_tree
 
 import (
+	"tui-dbms/database/mysql"
+
 	"github.com/rivo/tview"
 )
 
@@ -9,7 +11,9 @@ type DatabaseTree struct {
 }
 
 // Initialize database tree
-func NewDatabaseTree(tables []string) *DatabaseTree {
+func NewDatabaseTree(database mysql.IDatabaase) *DatabaseTree {
+	tables := database.ShowTables()
+
 	rootNode := tview.NewTreeNode("default database")
 	treeView := tview.NewTreeView()
 
@@ -23,7 +27,9 @@ func NewDatabaseTree(tables []string) *DatabaseTree {
 	treeView.SetTitle("Database trees")
 	treeView.SetBorder(true)
 
-	return &DatabaseTree{
+	dbTree := &DatabaseTree{
 		TreeView: treeView,
 	}
+
+	return dbTree
 }

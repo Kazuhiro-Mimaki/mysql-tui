@@ -12,6 +12,11 @@ type MySQL struct {
 	pool *sql.DB
 }
 
+type IDatabaase interface {
+	ShowTables() []string
+	GetRecords(table string) [][]*string
+}
+
 // Initialize mysql
 func NewMySQL() *MySQL {
 	pool, err := sql.Open("mysql", "root@(localhost:3306)/world") // "dbUser:dbPassword@(dbURL:PORT)/dbName"
