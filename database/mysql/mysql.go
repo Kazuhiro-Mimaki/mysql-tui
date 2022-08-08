@@ -19,7 +19,11 @@ type IDatabaase interface {
 	changeTable(database string)
 }
 
-// Initialize mysql
+/*
+====================
+Initialize mysql
+====================
+*/
 func NewMySQL(database string) *MySQL {
 	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database)) // "dbUser:dbPassword@(dbURL:PORT)/dbName"
 	if err != nil {
@@ -29,6 +33,11 @@ func NewMySQL(database string) *MySQL {
 	return &MySQL{pool: pool}
 }
 
+/*
+====================
+Show database list
+====================
+*/
 func (mysql *MySQL) ShowDatabases() []string {
 	row, err := mysql.pool.Query("SHOW DATABASES")
 	if err != nil {
@@ -48,6 +57,11 @@ func (mysql *MySQL) ShowDatabases() []string {
 	return databases
 }
 
+/*
+====================
+Create connection with other table
+====================
+*/
 func (mysql *MySQL) changeTable(database string) {
 	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database))
 	if err != nil {
@@ -57,6 +71,11 @@ func (mysql *MySQL) changeTable(database string) {
 	mysql.pool = pool
 }
 
+/*
+====================
+Show table list
+====================
+*/
 func (mysql *MySQL) ShowTables(database string) []string {
 	mysql.changeTable(database)
 
@@ -78,6 +97,11 @@ func (mysql *MySQL) ShowTables(database string) []string {
 	return tables
 }
 
+/*
+====================
+Get records
+====================
+*/
 func (mysql *MySQL) GetRecords(table string) [][]*string {
 	row, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s", table))
 	if err != nil {

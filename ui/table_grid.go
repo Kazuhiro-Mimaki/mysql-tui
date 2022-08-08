@@ -11,7 +11,11 @@ type TableGrid struct {
 	Records *tview.Table
 }
 
-// Initialize table grid
+/*
+====================
+Initialize table grid
+====================
+*/
 func NewTableGrid() *TableGrid {
 	table := tview.NewTable()
 
@@ -27,6 +31,11 @@ func NewTableGrid() *TableGrid {
 	}
 }
 
+/*
+====================
+Set new table
+====================
+*/
 func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
 	tg.ResetRecords()
 
@@ -59,7 +68,11 @@ func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
 	}
 }
 
-// clear records and scroll to beginning
+/*
+====================
+Clear records and scroll to beginning
+====================
+*/
 func (tg *TableGrid) ResetRecords() {
 	tg.Records.Clear().ScrollToBeginning()
 }

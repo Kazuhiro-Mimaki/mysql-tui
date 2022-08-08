@@ -10,7 +10,11 @@ type TableList struct {
 	List *tview.List
 }
 
-// Initialize table list
+/*
+====================
+Initialize table list
+====================
+*/
 func NewTableList() *TableList {
 	list := tview.NewList()
 

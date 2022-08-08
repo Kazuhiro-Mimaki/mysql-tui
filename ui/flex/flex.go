@@ -2,6 +2,11 @@ package flex
 
 import "github.com/rivo/tview"
 
+/*
+====================
+Initialize flex layout
+====================
+*/
 func NewFlex(dbDropDown, tableList, sqlInputField, tableGrid tview.Primitive) *tview.Flex {
 	left := tview.NewFlex()
 	left.SetDirection(tview.FlexRow)

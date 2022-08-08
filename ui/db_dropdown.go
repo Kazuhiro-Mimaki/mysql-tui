@@ -9,7 +9,11 @@ type DatabaseDropDown struct {
 	DropDown *tview.DropDown
 }
 
-// Initialize db dropdown
+/*
+====================
+Initialize db dropdown
+====================
+*/
 func NewDatabaseDropDown(databases []string) *DatabaseDropDown {
 	var firstOptionIndex = 0
 

@@ -22,6 +22,11 @@ type TUI struct {
 	TableGrid        *ui.TableGrid
 }
 
+/*
+====================
+main
+====================
+*/
 func main() {
 	tui := NewTui()
 
@@ -34,6 +39,11 @@ func main() {
 	}
 }
 
+/*
+====================
+Initialize tui
+====================
+*/
 func NewTui() *TUI {
 	tui := &TUI{
 		App:   tview.NewApplication(),
@@ -64,30 +74,55 @@ func NewTui() *TUI {
 	return tui
 }
 
+/*
+====================
+Execute by goroutine
+====================
+*/
 func (tui *TUI) queueUpdateDraw(f func()) {
 	go func() {
 		tui.App.QueueUpdateDraw(f)
 	}()
 }
 
+/*
+====================
+Set focus on the target area
+====================
+*/
 func (tui *TUI) setFocus(p tview.Primitive) {
 	tui.queueUpdateDraw(func() {
 		tui.App.SetFocus(p)
 	})
 }
 
+/*
+====================
+Select database
+====================
+*/
 func (tui *TUI) selectDatabase(selectedDB string) {
 	tui.queueUpdateDraw(func() {
 		tui.TableList.SetTableList(selectedDB, tui.mysql)
 	})
 }
 
+/*
+====================
+Update table
+====================
+*/
 func (tui *TUI) updateTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
 		tui.TableGrid.SetTableGrid(selectedTable, tui.mysql)
 	})
 }
 
+/*
+====================
+Highlight the focused area
+====================
+*/
 func (tui *TUI) highlightFocusedArea(focusedArea tview.Primitive) {
 	tui.queueUpdateDraw(func() {
 		var highlightColor = tcell.ColorGreen
@@ -103,6 +138,11 @@ func (tui *TUI) highlightFocusedArea(focusedArea tview.Primitive) {
 	})
 }
 
+/*
+====================
+Set event key config
+====================
+*/
 func (tui *TUI) setEventKey() {
 	tui.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
