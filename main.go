@@ -40,9 +40,11 @@ func NewTui() *TUI {
 		mysql: mysql.NewMySQL(""),
 	}
 
-	tui.DatabaseDropDown = ui.NewDatabaseDropDown(tui.mysql)
-	tui.TableList = ui.NewTableList(tui.mysql)
-	tui.TableGrid = ui.NewTableGrid(tui.mysql)
+	databases := tui.mysql.ShowDatabases()
+
+	tui.DatabaseDropDown = ui.NewDatabaseDropDown(databases)
+	tui.TableList = ui.NewTableList()
+	tui.TableGrid = ui.NewTableGrid()
 
 	// when the databases selected, update the table list
 	tui.DatabaseDropDown.DropDown.SetSelectedFunc(func(text string, index int) {
@@ -77,9 +79,9 @@ func (tui *TUI) selectDatabase(selectedDB string) {
 	})
 }
 
-func (tui *TUI) updateTable(newTable string) {
+func (tui *TUI) updateTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
-		tui.TableGrid.SetTableGrid(newTable, tui.mysql)
+		tui.TableGrid.SetTableGrid(selectedTable, tui.mysql)
 	})
 }
 

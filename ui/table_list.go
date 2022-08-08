@@ -11,18 +11,16 @@ type TableList struct {
 }
 
 // Initialize table list
-func NewTableList(database mysql.IDatabaase) *TableList {
+func NewTableList() *TableList {
 	list := tview.NewList()
 
 	list.ShowSecondaryText(false)
 	list.SetTitle("Tables")
 	list.SetBorder(true)
 
-	tbl := &TableList{
+	return &TableList{
 		List: list,
 	}
-
-	return tbl
 }
 
 func (tbl *TableList) SetTableList(dbName string, database mysql.IDatabaase) {

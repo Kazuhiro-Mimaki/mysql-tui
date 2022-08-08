@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"tui-dbms/database/mysql"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -12,10 +10,8 @@ type DatabaseDropDown struct {
 }
 
 // Initialize db dropdown
-func NewDatabaseDropDown(database mysql.IDatabaase) *DatabaseDropDown {
+func NewDatabaseDropDown(databases []string) *DatabaseDropDown {
 	var firstOptionIndex = 0
-
-	databases := database.ShowDatabases()
 
 	dropdown := tview.NewDropDown()
 

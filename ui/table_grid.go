@@ -12,7 +12,7 @@ type TableGrid struct {
 }
 
 // Initialize table grid
-func NewTableGrid(database mysql.IDatabaase) *TableGrid {
+func NewTableGrid() *TableGrid {
 	table := tview.NewTable()
 
 	table.SetSelectable(true, true)
@@ -22,11 +22,9 @@ func NewTableGrid(database mysql.IDatabaase) *TableGrid {
 	// fix column names
 	table.SetFixed(1, 0)
 
-	tableGrid := &TableGrid{
+	return &TableGrid{
 		Records: table,
 	}
-
-	return tableGrid
 }
 
 func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {

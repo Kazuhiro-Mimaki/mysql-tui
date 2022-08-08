@@ -2,11 +2,11 @@ package flex
 
 import "github.com/rivo/tview"
 
-func NewFlex(dbDropDown, dbTreeList, sqlInputField, tableGrid tview.Primitive) *tview.Flex {
+func NewFlex(dbDropDown, tableList, sqlInputField, tableGrid tview.Primitive) *tview.Flex {
 	left := tview.NewFlex()
 	left.SetDirection(tview.FlexRow)
 	left.AddItem(dbDropDown, 0, 1, true) // tview.Primitive, fixedSize int, proportion int, focus bool
-	left.AddItem(dbTreeList, 0, 15, false)
+	left.AddItem(tableList, 0, 15, false)
 
 	right := tview.NewFlex()
 	right.SetDirection(tview.FlexRow)
