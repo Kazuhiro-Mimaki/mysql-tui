@@ -40,10 +40,8 @@ func NewTui() *TUI {
 		mysql: mysql.NewMySQL(""),
 	}
 
-	databases := tui.mysql.ShowDatabases()
-
 	tui.DatabaseDropDown = ui.NewDatabaseDropDown(tui.mysql)
-	tui.TableList = ui.NewTableList(databases[0], tui.mysql)
+	tui.TableList = ui.NewTableList(tui.mysql)
 	tui.TableGrid = ui.NewTableGrid(tui.mysql)
 
 	// when the databases selected, update the table list

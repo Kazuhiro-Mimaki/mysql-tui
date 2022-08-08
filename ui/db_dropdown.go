@@ -13,6 +13,8 @@ type DatabaseDropDown struct {
 
 // Initialize db dropdown
 func NewDatabaseDropDown(database mysql.IDatabaase) *DatabaseDropDown {
+	var firstOptionIndex = 0
+
 	databases := database.ShowDatabases()
 
 	dropdown := tview.NewDropDown()
@@ -21,6 +23,7 @@ func NewDatabaseDropDown(database mysql.IDatabaase) *DatabaseDropDown {
 	dropdown.SetTitle("Database")
 	dropdown.SetBorder(true)
 	dropdown.SetFieldTextColor(tcell.ColorBlack)
+	dropdown.SetCurrentOption(firstOptionIndex)
 
 	return &DatabaseDropDown{
 		DropDown: dropdown,
