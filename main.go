@@ -27,9 +27,9 @@ func main() {
 
 	flex := flex.NewFlex(tui.DatabaseDropDown.DropDown, tui.TableList.List, tview.NewBox().SetBorder(true).SetTitle("Query Input"), tui.TableGrid.Records)
 
-	tui.setEvent()
+	tui.setEventKey()
 
-	if err := tui.App.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
+	if err := tui.App.SetRoot(flex, true).EnableMouse(false).Run(); err != nil {
 		log.Println(err)
 	}
 }
@@ -56,7 +56,10 @@ func NewTui() *TUI {
 	tui.TableList.List.SetSelectedFunc(func(int, string, string, rune) {
 		selectedTable, _ := tui.TableList.List.GetItemText(tui.TableList.List.GetCurrentItem())
 		tui.updateTable(selectedTable)
+		tui.setFocus(tui.TableGrid.Records)
 	})
+
+	tui.highlightFocusedArea(tui.App.GetFocus())
 
 	return tui
 }
@@ -85,10 +88,29 @@ func (tui *TUI) updateTable(selectedTable string) {
 	})
 }
 
-func (tui *TUI) setEvent() {
+func (tui *TUI) highlightFocusedArea(focusedArea tview.Primitive) {
+	tui.queueUpdateDraw(func() {
+		var highlightColor = tcell.ColorGreen
+
+		switch focusedArea {
+		case tui.DatabaseDropDown.DropDown:
+			tui.DatabaseDropDown.DropDown.SetBorderColor(highlightColor)
+		case tui.TableList.List:
+			tui.TableList.List.SetBorderColor(highlightColor)
+		case tui.TableGrid.Records:
+			tui.TableGrid.Records.SetBorderColor(highlightColor)
+		}
+	})
+}
+
+func (tui *TUI) setEventKey() {
 	tui.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
-		case tcell.KeyTab:
+		case tcell.KeyCtrlA:
+			tui.setFocus(tui.DatabaseDropDown.DropDown)
+		case tcell.KeyCtrlS:
+			tui.setFocus(tui.TableList.List)
+		case tcell.KeyCtrlE:
 			tui.setFocus(tui.TableGrid.Records)
 		}
 		return event
