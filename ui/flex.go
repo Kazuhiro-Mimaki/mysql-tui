@@ -36,6 +36,11 @@ func NewMainFlex(dbDropDown, tableList, sqlInputField, tableGrid tview.Primitive
 	}
 }
 
+/*
+====================
+Initialize left flex layout
+====================
+*/
 func NewLeftFlex(dbDropDown, tableList tview.Primitive) *LeftFlex {
 	leftLayout := tview.NewFlex()
 	leftLayout.SetDirection(tview.FlexRow)
@@ -47,6 +52,11 @@ func NewLeftFlex(dbDropDown, tableList tview.Primitive) *LeftFlex {
 	}
 }
 
+/*
+====================
+Initialize right flex layout
+====================
+*/
 func NewRightFlex(sqlInputField, tableGrid tview.Primitive) *RightFlex {
 	rightLayout := tview.NewFlex()
 	rightLayout.SetDirection(tview.FlexRow)

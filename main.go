@@ -30,8 +30,6 @@ main
 func main() {
 	tui := NewTui()
 
-	tui.setEventKey()
-
 	if err := tui.App.SetRoot(tui.Flex.Main, true).EnableMouse(false).Run(); err != nil {
 		log.Println(err)
 	}
@@ -61,18 +59,8 @@ func NewTui() *TUI {
 		tui.TableGridComponent.View,
 	)
 
-	// when the databases selected, update the table list
-	tui.DBDropDownComponent.View.SetSelectedFunc(func(selectedDatabase string, _ int) {
-		tui.selectDatabase(selectedDatabase)
-		tui.setFocus(tui.TableListComponent.View)
-	})
-
-	// when the table selected, update the table records
-	tui.TableListComponent.View.SetSelectedFunc(func(_ int, selectedTable, _ string, _ rune) {
-		tui.selectTable(selectedTable)
-		tui.setFocus(tui.TableGridComponent.View)
-	})
-
+	tui.setEventKey()
+	tui.setSelectedFunction()
 	tui.highlightFocusedArea(tui.App.GetFocus())
 
 	return tui
@@ -160,5 +148,24 @@ func (tui *TUI) setEventKey() {
 			tui.setFocus(tui.TableGridComponent.View)
 		}
 		return event
+	})
+}
+
+/*
+====================
+Set selected functions
+====================
+*/
+func (tui *TUI) setSelectedFunction() {
+	// DB dropdown
+	tui.DBDropDownComponent.View.SetSelectedFunc(func(selectedDatabase string, _ int) {
+		tui.selectDatabase(selectedDatabase)
+		tui.setFocus(tui.TableListComponent.View)
+	})
+
+	// Table list
+	tui.TableListComponent.View.SetSelectedFunc(func(_ int, selectedTable, _ string, _ rune) {
+		tui.selectTable(selectedTable)
+		tui.setFocus(tui.TableGridComponent.View)
 	})
 }
