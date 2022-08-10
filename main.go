@@ -107,8 +107,12 @@ Select table
 */
 func (tui *TUI) selectTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
-		records := tui.mysql.GetRecords(selectedTable)
-		tui.TableGridComponent.SetTableView(records)
+		tui.TableGridComponent.Data = ui.TableData{
+			Schemas: tui.mysql.GetSchemas(selectedTable),
+			Records: tui.mysql.GetRecords(selectedTable),
+		}
+
+		tui.TableGridComponent.SetTableView(tui.TableGridComponent.Data.Records)
 	})
 }
 

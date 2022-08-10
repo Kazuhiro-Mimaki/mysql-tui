@@ -15,6 +15,7 @@ type MySQL struct {
 type IDatabaase interface {
 	ShowDatabases() []string
 	ShowTables(database string) []string
+	GetSchemas(table string) [][]*string
 	GetRecords(table string) [][]*string
 	changeTable(database string)
 }
@@ -139,4 +140,48 @@ func (mysql *MySQL) GetRecords(table string) [][]*string {
 	}
 
 	return records
+}
+
+/*
+====================
+Show full columns
+====================
+*/
+func (mysql *MySQL) GetSchemas(table string) [][]*string {
+	row, err := mysql.pool.Query(fmt.Sprintf("SHOW FULL COLUMNS FROM %s", table))
+	if err != nil {
+		log.Println(err)
+	}
+
+	cols, err := row.Columns()
+	if err != nil {
+		log.Println(err)
+	}
+
+	var colsNames []*string
+	for _, col := range cols {
+		colName := col
+		colsNames = append(colsNames, &colName)
+	}
+
+	var schemas = [][]*string{}
+	// set column names at first
+	schemas = append(schemas, colsNames)
+	for row.Next() {
+		fields := make([]*string, len(cols))
+		fieldsPointers := make([]interface{}, len(cols))
+		for i := range fields {
+			fieldsPointers[i] = &fields[i]
+		}
+
+		// scan by a row, and set to pointers
+		err = row.Scan(fieldsPointers...)
+		if err != nil {
+			log.Println(err)
+		}
+
+		schemas = append(schemas, fields)
+	}
+
+	return schemas
 }

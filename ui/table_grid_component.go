@@ -6,7 +6,14 @@ import (
 )
 
 type TableGridComponent struct {
-	View *tview.Table
+	CurrentMode string
+	View        *tview.Table
+	Data        TableData
+}
+
+type TableData struct {
+	Schemas [][]*string
+	Records [][]*string
 }
 
 /*
@@ -15,18 +22,24 @@ Initialize table grid
 ====================
 */
 func NewTableGridComponent() *TableGridComponent {
+	var defaultMode = "Record"
+
 	tableView := tview.NewTable()
 
 	tableView.SetSelectable(true, true)
-	tableView.SetTitle("Records")
+	tableView.SetTitle("Table view")
 	tableView.SetBorder(true)
-
 	// fix column names
 	tableView.SetFixed(1, 0)
 
-	return &TableGridComponent{
-		View: tableView,
+	tc := &TableGridComponent{
+		CurrentMode: defaultMode,
+		View:        tableView,
 	}
+
+	tc.setEventKey()
+
+	return tc
 }
 
 /*
@@ -72,4 +85,35 @@ Clear records and scroll to beginning
 */
 func (tc *TableGridComponent) ResetTableView() {
 	tc.View.Clear().ScrollToBeginning()
+}
+
+/*
+====================
+Switch table view mode
+====================
+*/
+func (tc *TableGridComponent) switchMode() {
+	switch tc.CurrentMode {
+	case "Record":
+		tc.CurrentMode = "Schema"
+		tc.SetTableView(tc.Data.Schemas)
+	case "Schema":
+		tc.CurrentMode = "Record"
+		tc.SetTableView(tc.Data.Records)
+	}
+}
+
+/*
+====================
+Set event key config
+====================
+*/
+func (tc *TableGridComponent) setEventKey() {
+	tc.View.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyCtrlP:
+			tc.switchMode()
+		}
+		return event
+	})
 }
