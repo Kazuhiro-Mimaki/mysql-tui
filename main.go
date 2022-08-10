@@ -4,7 +4,6 @@ import (
 	"log"
 	"tui-dbms/database/mysql"
 	"tui-dbms/ui"
-	"tui-dbms/ui/flex"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -17,9 +16,10 @@ type TUI struct {
 	mysql *mysql.MySQL
 
 	// view components
-	DatabaseDropDown *ui.DatabaseDropDown
-	TableList        *ui.TableList
-	TableGrid        *ui.TableGrid
+	DBDropDownComponent *ui.DBDropDownComponent
+	TableListComponent  *ui.TableListComponent
+	TableGridComponent  *ui.TableGridComponent
+	Flex                *ui.FlexLayout
 }
 
 /*
@@ -30,11 +30,9 @@ main
 func main() {
 	tui := NewTui()
 
-	flex := flex.NewFlex(tui.DatabaseDropDown.DropDown, tui.TableList.List, tview.NewBox().SetBorder(true).SetTitle("Query Input"), tui.TableGrid.Records)
-
 	tui.setEventKey()
 
-	if err := tui.App.SetRoot(flex, true).EnableMouse(false).Run(); err != nil {
+	if err := tui.App.SetRoot(tui.Flex.Main, true).EnableMouse(false).Run(); err != nil {
 		log.Println(err)
 	}
 }
@@ -52,21 +50,27 @@ func NewTui() *TUI {
 
 	databases := tui.mysql.ShowDatabases()
 
-	tui.DatabaseDropDown = ui.NewDatabaseDropDown(databases)
-	tui.TableList = ui.NewTableList()
-	tui.TableGrid = ui.NewTableGrid()
+	tui.DBDropDownComponent = ui.NewDBDropDownComponent(databases)
+	tui.TableListComponent = ui.NewTableListComponent()
+	tui.TableGridComponent = ui.NewTableGridComponent()
+
+	tui.Flex = ui.NewMainFlex(
+		tui.DBDropDownComponent.View,
+		tui.TableListComponent.View,
+		tview.NewBox().SetBorder(true).SetTitle("Query Input"),
+		tui.TableGridComponent.View,
+	)
 
 	// when the databases selected, update the table list
-	tui.DatabaseDropDown.DropDown.SetSelectedFunc(func(text string, index int) {
-		tui.selectDatabase(text)
-		tui.setFocus(tui.TableList.List)
+	tui.DBDropDownComponent.View.SetSelectedFunc(func(selectedDatabase string, _ int) {
+		tui.selectDatabase(selectedDatabase)
+		tui.setFocus(tui.TableListComponent.View)
 	})
 
 	// when the table selected, update the table records
-	tui.TableList.List.SetSelectedFunc(func(int, string, string, rune) {
-		selectedTable, _ := tui.TableList.List.GetItemText(tui.TableList.List.GetCurrentItem())
-		tui.updateTable(selectedTable)
-		tui.setFocus(tui.TableGrid.Records)
+	tui.TableListComponent.View.SetSelectedFunc(func(_ int, selectedTable, _ string, _ rune) {
+		tui.selectTable(selectedTable)
+		tui.setFocus(tui.TableGridComponent.View)
 	})
 
 	tui.highlightFocusedArea(tui.App.GetFocus())
@@ -103,18 +107,20 @@ Select database
 */
 func (tui *TUI) selectDatabase(selectedDB string) {
 	tui.queueUpdateDraw(func() {
-		tui.TableList.SetTableList(selectedDB, tui.mysql)
+		tables := tui.mysql.ShowTables(selectedDB)
+		tui.TableListComponent.SetTableListView(tables)
 	})
 }
 
 /*
 ====================
-Update table
+Select table
 ====================
 */
-func (tui *TUI) updateTable(selectedTable string) {
+func (tui *TUI) selectTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
-		tui.TableGrid.SetTableGrid(selectedTable, tui.mysql)
+		records := tui.mysql.GetRecords(selectedTable)
+		tui.TableGridComponent.SetTableView(records)
 	})
 }
 
@@ -128,12 +134,12 @@ func (tui *TUI) highlightFocusedArea(focusedArea tview.Primitive) {
 		var highlightColor = tcell.ColorGreen
 
 		switch focusedArea {
-		case tui.DatabaseDropDown.DropDown:
-			tui.DatabaseDropDown.DropDown.SetBorderColor(highlightColor)
-		case tui.TableList.List:
-			tui.TableList.List.SetBorderColor(highlightColor)
-		case tui.TableGrid.Records:
-			tui.TableGrid.Records.SetBorderColor(highlightColor)
+		case tui.DBDropDownComponent.View:
+			tui.DBDropDownComponent.View.SetBorderColor(highlightColor)
+		case tui.TableListComponent.View:
+			tui.TableListComponent.View.SetBorderColor(highlightColor)
+		case tui.TableGridComponent.View:
+			tui.TableGridComponent.View.SetBorderColor(highlightColor)
 		}
 	})
 }
@@ -147,11 +153,11 @@ func (tui *TUI) setEventKey() {
 	tui.App.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyCtrlA:
-			tui.setFocus(tui.DatabaseDropDown.DropDown)
+			tui.setFocus(tui.DBDropDownComponent.View)
 		case tcell.KeyCtrlS:
-			tui.setFocus(tui.TableList.List)
+			tui.setFocus(tui.TableListComponent.View)
 		case tcell.KeyCtrlE:
-			tui.setFocus(tui.TableGrid.Records)
+			tui.setFocus(tui.TableGridComponent.View)
 		}
 		return event
 	})

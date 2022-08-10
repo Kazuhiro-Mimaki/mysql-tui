@@ -1,14 +1,12 @@
 package ui
 
 import (
-	"tui-dbms/database/mysql"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-type TableGrid struct {
-	Records *tview.Table
+type TableGridComponent struct {
+	View *tview.Table
 }
 
 /*
@@ -16,32 +14,31 @@ type TableGrid struct {
 Initialize table grid
 ====================
 */
-func NewTableGrid() *TableGrid {
-	table := tview.NewTable()
+func NewTableGridComponent() *TableGridComponent {
+	tableView := tview.NewTable()
 
-	table.SetSelectable(true, true)
-	table.SetTitle("Records")
-	table.SetBorder(true)
+	tableView.SetSelectable(true, true)
+	tableView.SetTitle("Records")
+	tableView.SetBorder(true)
 
 	// fix column names
-	table.SetFixed(1, 0)
+	tableView.SetFixed(1, 0)
 
-	return &TableGrid{
-		Records: table,
+	return &TableGridComponent{
+		View: tableView,
 	}
 }
 
 /*
 ====================
-Set new table
+Set new table view
 ====================
 */
-func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
-	tg.ResetRecords()
+func (tc *TableGridComponent) SetTableView(data [][]*string) {
+	tc.ResetTableView()
 
-	tableData := database.GetRecords(table)
-
-	for i, row := range tableData {
+	// Set records as default
+	for i, row := range data {
 		for j, col := range row {
 			var cellValue string
 			var cellColor = tcell.ColorWhite
@@ -56,7 +53,7 @@ func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
 				cellColor = tcell.ColorNavy
 			}
 
-			tg.Records.SetCell(
+			tc.View.SetCell(
 				i, j,
 				&tview.TableCell{
 					Text:          cellValue,
@@ -73,6 +70,6 @@ func (tg *TableGrid) SetTableGrid(table string, database mysql.IDatabaase) {
 Clear records and scroll to beginning
 ====================
 */
-func (tg *TableGrid) ResetRecords() {
-	tg.Records.Clear().ScrollToBeginning()
+func (tc *TableGridComponent) ResetTableView() {
+	tc.View.Clear().ScrollToBeginning()
 }
