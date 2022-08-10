@@ -36,6 +36,20 @@ func NewMySQL(database string) *MySQL {
 
 /*
 ====================
+Create connection with other table
+====================
+*/
+func (mysql *MySQL) changeTable(database string) {
+	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database))
+	if err != nil {
+		log.Println(err)
+	}
+
+	mysql.pool = pool
+}
+
+/*
+====================
 Show database list
 ====================
 */
@@ -56,20 +70,6 @@ func (mysql *MySQL) ShowDatabases() []string {
 	}
 
 	return databases
-}
-
-/*
-====================
-Create connection with other table
-====================
-*/
-func (mysql *MySQL) changeTable(database string) {
-	pool, err := sql.Open("mysql", fmt.Sprintf("root@(localhost:3306)/%s", database))
-	if err != nil {
-		log.Println(err)
-	}
-
-	mysql.pool = pool
 }
 
 /*
@@ -104,42 +104,12 @@ Get records
 ====================
 */
 func (mysql *MySQL) GetRecords(table string) [][]*string {
-	row, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s", table))
+	rows, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s", table))
 	if err != nil {
 		log.Println(err)
 	}
 
-	cols, err := row.Columns()
-	if err != nil {
-		log.Println(err)
-	}
-
-	var colsNames []*string
-	for _, col := range cols {
-		colName := col
-		colsNames = append(colsNames, &colName)
-	}
-
-	var records = [][]*string{}
-	// set column names at first
-	records = append(records, colsNames)
-	for row.Next() {
-		fields := make([]*string, len(cols))
-		fieldsPointers := make([]interface{}, len(cols))
-		for i := range fields {
-			fieldsPointers[i] = &fields[i]
-		}
-
-		// scan by a row, and set to pointers
-		err = row.Scan(fieldsPointers...)
-		if err != nil {
-			log.Println(err)
-		}
-
-		records = append(records, fields)
-	}
-
-	return records
+	return scanRows(rows)
 }
 
 /*
@@ -148,40 +118,10 @@ Show full columns
 ====================
 */
 func (mysql *MySQL) GetSchemas(table string) [][]*string {
-	row, err := mysql.pool.Query(fmt.Sprintf("SHOW FULL COLUMNS FROM %s", table))
+	rows, err := mysql.pool.Query(fmt.Sprintf("SHOW FULL COLUMNS FROM %s", table))
 	if err != nil {
 		log.Println(err)
 	}
 
-	cols, err := row.Columns()
-	if err != nil {
-		log.Println(err)
-	}
-
-	var colsNames []*string
-	for _, col := range cols {
-		colName := col
-		colsNames = append(colsNames, &colName)
-	}
-
-	var schemas = [][]*string{}
-	// set column names at first
-	schemas = append(schemas, colsNames)
-	for row.Next() {
-		fields := make([]*string, len(cols))
-		fieldsPointers := make([]interface{}, len(cols))
-		for i := range fields {
-			fieldsPointers[i] = &fields[i]
-		}
-
-		// scan by a row, and set to pointers
-		err = row.Scan(fieldsPointers...)
-		if err != nil {
-			log.Println(err)
-		}
-
-		schemas = append(schemas, fields)
-	}
-
-	return schemas
+	return scanRows(rows)
 }
