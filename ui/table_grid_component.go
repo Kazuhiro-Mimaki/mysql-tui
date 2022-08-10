@@ -5,8 +5,15 @@ import (
 	"github.com/rivo/tview"
 )
 
+type currentMode uint8
+
+const (
+	Record currentMode = iota + 1
+	Schema
+)
+
 type TableGridComponent struct {
-	CurrentMode string
+	CurrentMode currentMode
 	View        *tview.Table
 	Data        TableData
 }
@@ -22,7 +29,7 @@ Initialize table grid
 ====================
 */
 func NewTableGridComponent() *TableGridComponent {
-	var defaultMode = "Record"
+	var defaultMode = Record
 
 	tableView := tview.NewTable()
 
@@ -94,11 +101,11 @@ Switch table view mode
 */
 func (tc *TableGridComponent) switchMode() {
 	switch tc.CurrentMode {
-	case "Record":
-		tc.CurrentMode = "Schema"
+	case Record:
+		tc.CurrentMode = Schema
 		tc.SetTableView(tc.Data.Schemas)
-	case "Schema":
-		tc.CurrentMode = "Record"
+	case Schema:
+		tc.CurrentMode = Record
 		tc.SetTableView(tc.Data.Records)
 	}
 }
