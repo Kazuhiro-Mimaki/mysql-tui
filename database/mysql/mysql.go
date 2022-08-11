@@ -109,7 +109,12 @@ func (mysql *MySQL) GetRecords(table string) [][]*string {
 		log.Println(err)
 	}
 
-	return scanRows(rows)
+	data, err := scanRows(rows)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return data
 }
 
 /*
@@ -123,5 +128,31 @@ func (mysql *MySQL) GetSchemas(table string) [][]*string {
 		log.Println(err)
 	}
 
-	return scanRows(rows)
+	data, err := scanRows(rows)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return data
+}
+
+/*
+====================
+Custom query
+====================
+*/
+func (mysql *MySQL) CustomQuery(query string) (data [][]*string, err error) {
+	rows, err := mysql.pool.Query(query)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	data, err = scanRows(rows)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	return
 }

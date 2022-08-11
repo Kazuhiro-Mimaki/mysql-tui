@@ -12,7 +12,7 @@ import (
 Show full columns
 ====================
 */
-func scanRows(rows *sql.Rows) [][]*string {
+func scanRows(rows *sql.Rows) (data [][]*string, err error) {
 	cols, err := rows.Columns()
 	if err != nil {
 		log.Println(err)
@@ -43,5 +43,5 @@ func scanRows(rows *sql.Rows) [][]*string {
 		fields = append(fields, row)
 	}
 
-	return fields
+	return fields, err
 }

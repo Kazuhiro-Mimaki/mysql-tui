@@ -27,7 +27,7 @@ func NewMainFlex(dbDropDown, tableList, sqlInputField, tableGrid tview.Primitive
 
 	main := tview.NewFlex()
 	main.AddItem(left.Layout, 0, 1, true)
-	main.AddItem(right.Layout, 0, 7, false)
+	main.AddItem(right.Layout, 0, 7, true)
 
 	return &FlexLayout{
 		Main:  main,
