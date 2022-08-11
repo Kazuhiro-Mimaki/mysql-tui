@@ -17,6 +17,7 @@ func NewSQLInputFieldComponent() *SQLInputFieldComponent {
 	inputFieldView := tview.NewInputField()
 
 	inputFieldView.SetTitle("Query Input (SELECT)")
+	inputFieldView.SetTitleAlign(tview.AlignLeft)
 	inputFieldView.SetBorder(true)
 
 	return &SQLInputFieldComponent{

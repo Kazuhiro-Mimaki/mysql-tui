@@ -18,6 +18,7 @@ func NewTableListComponent() *TableListComponent {
 
 	listView.ShowSecondaryText(false)
 	listView.SetTitle("Tables")
+	listView.SetTitleAlign(tview.AlignLeft)
 	listView.SetBorder(true)
 
 	return &TableListComponent{

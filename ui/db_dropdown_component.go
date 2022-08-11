@@ -21,6 +21,7 @@ func NewDBDropDownComponent(databases []string) *DBDropDownComponent {
 
 	dropdownView.SetOptions(databases, nil)
 	dropdownView.SetTitle("Database")
+	dropdownView.SetTitleAlign(tview.AlignLeft)
 	dropdownView.SetBorder(true)
 	dropdownView.SetFieldTextColor(tcell.ColorBlack)
 	dropdownView.SetCurrentOption(firstOptionIndex)

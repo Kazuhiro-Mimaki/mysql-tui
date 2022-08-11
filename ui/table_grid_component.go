@@ -35,6 +35,7 @@ func NewTableGridComponent() *TableGridComponent {
 
 	tableView.SetSelectable(true, true)
 	tableView.SetTitle("Table view")
+	tableView.SetTitleAlign(tview.AlignLeft)
 	tableView.SetBorder(true)
 	// fix column names
 	tableView.SetFixed(1, 0)
