@@ -5,17 +5,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-type currentMode uint8
-
-const (
-	Record currentMode = iota + 1
-	Schema
-)
-
 type TableGridComponent struct {
-	CurrentMode currentMode
-	View        *tview.Table
-	Data        TableData
+	View    *tview.Pages
+	Schemas *tview.Table
+	Records *tview.Table
 }
 
 type TableData struct {
@@ -29,25 +22,23 @@ Initialize table grid
 ====================
 */
 func NewTableGridComponent() *TableGridComponent {
-	var defaultMode = Record
+	var pageView = tview.NewPages()
+	var schemaTable = tview.NewTable().SetSelectable(true, true)
+	var recordTable = tview.NewTable().SetSelectable(true, true)
 
-	tableView := tview.NewTable()
+	pageView.SetBorder(true)
+	pageView.AddPage("Schemas", schemaTable, true, false)
+	pageView.AddPage("Records", recordTable, true, true)
 
-	tableView.SetSelectable(true, true)
-	tableView.SetTitle("Table view")
-	tableView.SetTitleAlign(tview.AlignLeft)
-	tableView.SetBorder(true)
-	// fix column names
-	tableView.SetFixed(1, 0)
-
-	tc := &TableGridComponent{
-		CurrentMode: defaultMode,
-		View:        tableView,
+	var tbg = &TableGridComponent{
+		View:    pageView,
+		Schemas: schemaTable,
+		Records: recordTable,
 	}
 
-	tc.setEventKey()
+	tbg.setEventKey()
 
-	return tc
+	return tbg
 }
 
 /*
@@ -55,10 +46,19 @@ func NewTableGridComponent() *TableGridComponent {
 Set new table view
 ====================
 */
-func (tc *TableGridComponent) SetTableView(data [][]*string) {
-	tc.ResetTableView()
+func (tbg *TableGridComponent) SetTableView(tableData TableData) {
+	tbg.SetTableData(tbg.Schemas, tableData.Schemas)
+	tbg.SetTableData(tbg.Records, tableData.Records)
+}
 
-	// Set records as default
+/*
+====================
+Set new table data
+====================
+*/
+func (tbg *TableGridComponent) SetTableData(targetGrid *tview.Table, data [][]*string) {
+	targetGrid.Clear().ScrollToBeginning()
+
 	for i, row := range data {
 		for j, col := range row {
 			var cellValue string
@@ -74,7 +74,7 @@ func (tc *TableGridComponent) SetTableView(data [][]*string) {
 				cellColor = tcell.ColorNavy
 			}
 
-			tc.View.SetCell(
+			targetGrid.SetCell(
 				i, j,
 				&tview.TableCell{
 					Text:          cellValue,
@@ -88,26 +88,16 @@ func (tc *TableGridComponent) SetTableView(data [][]*string) {
 
 /*
 ====================
-Clear records and scroll to beginning
-====================
-*/
-func (tc *TableGridComponent) ResetTableView() {
-	tc.View.Clear().ScrollToBeginning()
-}
-
-/*
-====================
 Switch table view mode
 ====================
 */
-func (tc *TableGridComponent) switchMode() {
-	switch tc.CurrentMode {
-	case Record:
-		tc.CurrentMode = Schema
-		tc.SetTableView(tc.Data.Schemas)
-	case Schema:
-		tc.CurrentMode = Record
-		tc.SetTableView(tc.Data.Records)
+func (tbg *TableGridComponent) switchMode() {
+	var currentPage, _ = tbg.View.GetFrontPage()
+	switch currentPage {
+	case "Schemas":
+		tbg.View.SwitchToPage("Records")
+	case "Records":
+		tbg.View.SwitchToPage("Schemas")
 	}
 }
 
@@ -116,11 +106,11 @@ func (tc *TableGridComponent) switchMode() {
 Set event key config
 ====================
 */
-func (tc *TableGridComponent) setEventKey() {
-	tc.View.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+func (tbg *TableGridComponent) setEventKey() {
+	tbg.View.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Key() {
 		case tcell.KeyCtrlP:
-			tc.switchMode()
+			tbg.switchMode()
 		}
 		return event
 	})

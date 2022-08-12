@@ -109,12 +109,12 @@ Select table
 */
 func (tui *TUI) selectTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
-		tui.TableGridComponent.Data = ui.TableData{
+		var tableData = ui.TableData{
 			Schemas: tui.mysql.GetSchemas(selectedTable),
 			Records: tui.mysql.GetRecords(selectedTable),
 		}
 
-		tui.TableGridComponent.SetTableView(tui.TableGridComponent.Data.Records)
+		tui.TableGridComponent.SetTableView(tableData)
 	})
 }
 
@@ -130,12 +130,12 @@ func (tui *TUI) executeQuery(query string) {
 			tui.showError(err)
 		}
 
-		tui.TableGridComponent.Data = ui.TableData{
+		var tableData = ui.TableData{
 			Schemas: nil,
 			Records: records,
 		}
 
-		tui.TableGridComponent.SetTableView(tui.TableGridComponent.Data.Records)
+		tui.TableGridComponent.SetTableView(tableData)
 	})
 }
 
