@@ -104,7 +104,9 @@ Get records
 ====================
 */
 func (mysql *MySQL) GetRecords(table string) (data [][]*string, err error) {
-	rows, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s", table))
+	var defaultCount = 50
+
+	rows, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s LIMIT %d", table, defaultCount))
 	if err != nil {
 		return
 	}
