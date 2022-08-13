@@ -1,7 +1,7 @@
 package ui
 
 import (
-	table "tui-dbms/ui/table"
+	table "tui-dbms/ui/tablecomponent"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
