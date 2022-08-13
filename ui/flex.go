@@ -21,9 +21,9 @@ type RightFlex struct {
 Initialize flex layout
 ====================
 */
-func NewMainFlex(dbDropDown, tableList, sqlInputField, tableGrid tview.Primitive) *FlexLayout {
+func NewMainFlex(dbDropDown, tableList, page tview.Primitive) *FlexLayout {
 	left := NewLeftFlex(dbDropDown, tableList)
-	right := NewRightFlex(sqlInputField, tableGrid)
+	right := NewRightFlex(page)
 
 	main := tview.NewFlex()
 	main.AddItem(left.Layout, 0, 1, true)
@@ -57,11 +57,10 @@ func NewLeftFlex(dbDropDown, tableList tview.Primitive) *LeftFlex {
 Initialize right flex layout
 ====================
 */
-func NewRightFlex(sqlInputField, tableGrid tview.Primitive) *RightFlex {
+func NewRightFlex(page tview.Primitive) *RightFlex {
 	rightLayout := tview.NewFlex()
 	rightLayout.SetDirection(tview.FlexRow)
-	rightLayout.AddItem(sqlInputField, 0, 1, false)
-	rightLayout.AddItem(tableGrid, 0, 15, false)
+	rightLayout.AddItem(page, 0, 1, false)
 
 	return &RightFlex{
 		Layout: rightLayout,

@@ -1,4 +1,4 @@
-package ui
+package read
 
 import (
 	"github.com/rivo/tview"

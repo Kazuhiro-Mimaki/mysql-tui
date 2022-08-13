@@ -1,7 +1,7 @@
-package ui
+package read
 
 import (
-	table "tui-dbms/ui/tablecomponent"
+	table "tui-dbms/ui/tablemode/read/tablecomponent"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"

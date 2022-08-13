@@ -5,6 +5,8 @@ import (
 	"tui-dbms/database/mysql"
 	"tui-dbms/ui"
 
+	"tui-dbms/ui/tablemode/read"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -16,11 +18,10 @@ type TUI struct {
 	mysql *mysql.MySQL
 
 	// view components
-	DBDropDownComponent    *ui.DBDropDownComponent
-	TableListComponent     *ui.TableListComponent
-	SQLInputFieldComponent *ui.SQLInputFieldComponent
-	TableGridComponent     *ui.TableGridComponent
-	Flex                   *ui.FlexLayout
+	DBDropDownComponent *ui.DBDropDownComponent
+	TableListComponent  *ui.TableListComponent
+	PageComponent       *ui.PageComponent
+	Flex                *ui.FlexLayout
 }
 
 /*
@@ -51,14 +52,12 @@ func NewTui() *TUI {
 
 	tui.DBDropDownComponent = ui.NewDBDropDownComponent(databases)
 	tui.TableListComponent = ui.NewTableListComponent()
-	tui.SQLInputFieldComponent = ui.NewSQLInputFieldComponent()
-	tui.TableGridComponent = ui.NewTableGridComponent()
+	tui.PageComponent = ui.NewPageComponent()
 
 	tui.Flex = ui.NewMainFlex(
 		tui.DBDropDownComponent.View,
 		tui.TableListComponent.View,
-		tui.SQLInputFieldComponent.View,
-		tui.TableGridComponent.View,
+		tui.PageComponent.View,
 	)
 
 	tui.setEventKey()
@@ -110,12 +109,12 @@ Select table
 */
 func (tui *TUI) selectTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
-		var tableData = ui.TableData{
+		var tableData = read.TableData{
 			Schemas: tui.mysql.GetSchemas(selectedTable),
 			Records: tui.mysql.GetRecords(selectedTable),
 		}
 
-		tui.TableGridComponent.SetTable(tableData)
+		tui.PageComponent.ReadLayout.TableGridComponent.SetTable(tableData)
 	})
 }
 
@@ -131,12 +130,12 @@ func (tui *TUI) executeQuery(query string) {
 			tui.showError(err)
 		}
 
-		var tableData = ui.TableData{
+		var tableData = read.TableData{
 			Schemas: nil,
 			Records: records,
 		}
 
-		tui.TableGridComponent.SetTable(tableData)
+		tui.PageComponent.ReadLayout.TableGridComponent.SetTable(tableData)
 	})
 }
 
@@ -154,10 +153,10 @@ func (tui *TUI) highlightFocusedArea(focusedArea tview.Primitive) {
 			tui.DBDropDownComponent.View.SetBorderColor(highlightColor)
 		case tui.TableListComponent.View:
 			tui.TableListComponent.View.SetBorderColor(highlightColor)
-		case tui.SQLInputFieldComponent.View:
-			tui.SQLInputFieldComponent.View.SetBorderColor(highlightColor)
-		case tui.TableGridComponent.View:
-			tui.TableGridComponent.View.SetBorderColor(highlightColor)
+		case tui.PageComponent.ReadLayout.SQLInputFieldComponent.View:
+			tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.SetBorderColor(highlightColor)
+		case tui.PageComponent.ReadLayout.TableGridComponent.View:
+			tui.PageComponent.ReadLayout.TableGridComponent.View.SetBorderColor(highlightColor)
 		}
 	})
 }
@@ -175,9 +174,9 @@ func (tui *TUI) setEventKey() {
 		case tcell.KeyCtrlS:
 			tui.setFocus(tui.TableListComponent.View)
 		case tcell.KeyCtrlI:
-			tui.setFocus(tui.SQLInputFieldComponent.View)
+			tui.setFocus(tui.PageComponent.ReadLayout.SQLInputFieldComponent.View)
 		case tcell.KeyCtrlE:
-			tui.setFocus(tui.TableGridComponent.View)
+			tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
 		}
 		return event
 	})
@@ -198,14 +197,14 @@ func (tui *TUI) setEventFunction() {
 	// Table list
 	tui.TableListComponent.View.SetSelectedFunc(func(_ int, selectedTable, _ string, _ rune) {
 		tui.selectTable(selectedTable)
-		tui.setFocus(tui.TableGridComponent.View)
+		tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
 	})
 
 	// SQL input
-	tui.SQLInputFieldComponent.View.SetDoneFunc(func(key tcell.Key) {
-		inputQuery := tui.SQLInputFieldComponent.View.GetText()
+	tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.SetDoneFunc(func(key tcell.Key) {
+		inputQuery := tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.GetText()
 		tui.executeQuery(inputQuery)
-		tui.setFocus(tui.TableGridComponent.View)
+		tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
 	})
 }
 
