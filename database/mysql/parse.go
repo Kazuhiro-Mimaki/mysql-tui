@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"database/sql"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -15,7 +14,7 @@ Show full columns
 func scanRows(rows *sql.Rows) (data [][]*string, err error) {
 	cols, err := rows.Columns()
 	if err != nil {
-		log.Println(err)
+		return
 	}
 
 	var colNames []*string
@@ -24,9 +23,9 @@ func scanRows(rows *sql.Rows) (data [][]*string, err error) {
 		colNames = append(colNames, &colName)
 	}
 
-	var fields = [][]*string{}
+	data = [][]*string{}
 	// set column names at first
-	fields = append(fields, colNames)
+	data = append(data, colNames)
 	for rows.Next() {
 		row := make([]*string, len(cols))
 		rowPointers := make([]interface{}, len(cols))
@@ -37,11 +36,11 @@ func scanRows(rows *sql.Rows) (data [][]*string, err error) {
 		// scan by a row, and set to pointers
 		err = rows.Scan(rowPointers...)
 		if err != nil {
-			log.Println(err)
+			return
 		}
 
-		fields = append(fields, row)
+		data = append(data, row)
 	}
 
-	return fields, err
+	return
 }

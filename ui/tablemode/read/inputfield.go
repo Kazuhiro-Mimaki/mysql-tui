@@ -10,7 +10,7 @@ type SQLInputFieldComponent struct {
 
 /*
 ====================
-Initialize db dropdown
+Initialize sql input field
 ====================
 */
 func NewSQLInputFieldComponent() *SQLInputFieldComponent {

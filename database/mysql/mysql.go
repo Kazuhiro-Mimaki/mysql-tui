@@ -103,18 +103,18 @@ func (mysql *MySQL) ShowTables(database string) []string {
 Get records
 ====================
 */
-func (mysql *MySQL) GetRecords(table string) [][]*string {
+func (mysql *MySQL) GetRecords(table string) (data [][]*string, err error) {
 	rows, err := mysql.pool.Query(fmt.Sprintf("SELECT * FROM %s", table))
 	if err != nil {
-		log.Println(err)
+		return
 	}
 
-	data, err := scanRows(rows)
+	data, err = scanRows(rows)
 	if err != nil {
-		log.Println(err)
+		return
 	}
 
-	return data
+	return
 }
 
 /*
@@ -122,35 +122,33 @@ func (mysql *MySQL) GetRecords(table string) [][]*string {
 Show full columns
 ====================
 */
-func (mysql *MySQL) GetSchemas(table string) [][]*string {
+func (mysql *MySQL) GetSchemas(table string) (data [][]*string, err error) {
 	rows, err := mysql.pool.Query(fmt.Sprintf("SHOW FULL COLUMNS FROM %s", table))
 	if err != nil {
-		log.Println(err)
-	}
-
-	data, err := scanRows(rows)
-	if err != nil {
-		log.Println(err)
-	}
-
-	return data
-}
-
-/*
-====================
-Custom query
-====================
-*/
-func (mysql *MySQL) CustomQuery(query string) (data [][]*string, err error) {
-	rows, err := mysql.pool.Query(query)
-	if err != nil {
-		log.Println(err)
 		return
 	}
 
 	data, err = scanRows(rows)
 	if err != nil {
-		log.Println(err)
+		return
+	}
+
+	return
+}
+
+/*
+====================
+Read query
+====================
+*/
+func (mysql *MySQL) ReadQuery(query string) (data [][]*string, err error) {
+	rows, err := mysql.pool.Query(query)
+	if err != nil {
+		return
+	}
+
+	data, err = scanRows(rows)
+	if err != nil {
 		return
 	}
 

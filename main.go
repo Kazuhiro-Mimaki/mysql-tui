@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 	"tui-dbms/database/mysql"
 	"tui-dbms/ui"
 
@@ -109,9 +110,12 @@ Select table
 */
 func (tui *TUI) selectTable(selectedTable string) {
 	tui.queueUpdateDraw(func() {
+		schemas, _ := tui.mysql.GetSchemas(selectedTable)
+		records, _ := tui.mysql.GetRecords(selectedTable)
+
 		var tableData = read.TableData{
-			Schemas: tui.mysql.GetSchemas(selectedTable),
-			Records: tui.mysql.GetRecords(selectedTable),
+			Schemas: schemas,
+			Records: records,
 		}
 
 		tui.PageComponent.ReadLayout.TableGridComponent.SetTable(tableData)
@@ -123,9 +127,9 @@ func (tui *TUI) selectTable(selectedTable string) {
 Execute custom SQL
 ====================
 */
-func (tui *TUI) executeQuery(query string) {
+func (tui *TUI) executeReadQuery(query string) {
 	tui.queueUpdateDraw(func() {
-		records, err := tui.mysql.CustomQuery(query)
+		records, err := tui.mysql.ReadQuery(query)
 		if err != nil {
 			tui.showError(err)
 		}
@@ -203,15 +207,20 @@ func (tui *TUI) setEventFunction() {
 	// SQL input
 	tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.SetDoneFunc(func(key tcell.Key) {
 		inputQuery := tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.GetText()
-		tui.executeQuery(inputQuery)
+		tui.executeReadQuery(inputQuery)
 		tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
 	})
 }
 
 func (tui *TUI) showError(err error) {
 	tui.queueUpdateDraw(func() {
-		log.Println(err.Error())
-		// tui.SQLInputFieldComponent.View.SetText(err.Error())
+		tui.PageComponent.ReadLayout.SQLOutputFieldComponent.SetError(err)
+		go time.AfterFunc(3*time.Second, tui.resetMessage)
 	})
-	// go time.AfterFunc(3*time.Second, tui.resetMessage)
+}
+
+func (tui *TUI) resetMessage() {
+	tui.queueUpdateDraw(func() {
+		tui.PageComponent.ReadLayout.SQLOutputFieldComponent.Clear()
+	})
 }
