@@ -29,6 +29,8 @@ func NewTableGridComponent() *TableGridComponent {
 	var tableRecords = table.NewTableRecords()
 
 	pageView.SetBorder(true)
+	pageView.SetTitle("Table Data")
+	pageView.SetTitleAlign(tview.AlignLeft)
 	pageView.AddPage("Schemas", tableSchemas.View, true, false)
 	pageView.AddPage("Records", tableRecords.View, true, true)
 

@@ -156,3 +156,22 @@ func (mysql *MySQL) ReadQuery(query string) (data [][]*string, err error) {
 
 	return
 }
+
+/*
+====================
+Write query
+====================
+*/
+func (mysql *MySQL) WriteQuery(query string) (successMessage string, err error) {
+	res, err := mysql.pool.Exec(query)
+	if err != nil {
+		return
+	}
+
+	successMessage, err = format(res)
+	if err != nil {
+		return
+	}
+
+	return
+}

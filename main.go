@@ -124,14 +124,14 @@ func (tui *TUI) selectTable(selectedTable string) {
 
 /*
 ====================
-Execute custom SQL
+Execute read SQL
 ====================
 */
 func (tui *TUI) executeReadQuery(query string) {
 	tui.queueUpdateDraw(func() {
 		records, err := tui.mysql.ReadQuery(query)
 		if err != nil {
-			tui.showError(err)
+			tui.showReadSQLError(err)
 		}
 
 		var tableData = read.TableData{
@@ -140,6 +140,22 @@ func (tui *TUI) executeReadQuery(query string) {
 		}
 
 		tui.PageComponent.ReadLayout.TableGridComponent.SetTable(tableData)
+	})
+}
+
+/*
+====================
+Execute write SQL
+====================
+*/
+func (tui *TUI) executeWriteQuery(query string) {
+	tui.queueUpdateDraw(func() {
+		successMsg, err := tui.mysql.WriteQuery(query)
+		if err != nil {
+			tui.showWriteSQLError(err)
+		}
+
+		tui.PageComponent.WriteLayout.SQLOutputFieldComponent.SetSuccessMessage(successMsg)
 	})
 }
 
@@ -181,6 +197,15 @@ func (tui *TUI) setEventKey() {
 			tui.setFocus(tui.PageComponent.ReadLayout.SQLInputFieldComponent.View)
 		case tcell.KeyCtrlE:
 			tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
+		case tcell.KeyCtrlO:
+			page, _ := tui.PageComponent.View.GetFrontPage()
+			if page == "Read" {
+				tui.PageComponent.View.SwitchToPage("Write")
+				tui.setFocus(tui.PageComponent.WriteLayout.SQLInputFieldComponent.View)
+			} else {
+				tui.PageComponent.View.SwitchToPage("Read")
+				tui.setFocus(tui.PageComponent.ReadLayout.SQLInputFieldComponent.View)
+			}
 		}
 		return event
 	})
@@ -204,17 +229,30 @@ func (tui *TUI) setEventFunction() {
 		tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
 	})
 
-	// SQL input
+	// SQL read input
 	tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.SetDoneFunc(func(key tcell.Key) {
 		inputQuery := tui.PageComponent.ReadLayout.SQLInputFieldComponent.View.GetText()
 		tui.executeReadQuery(inputQuery)
 		tui.setFocus(tui.PageComponent.ReadLayout.TableGridComponent.View)
 	})
+
+	// SQL write input
+	tui.PageComponent.WriteLayout.SQLInputFieldComponent.View.SetDoneFunc(func(key tcell.Key) {
+		inputQuery := tui.PageComponent.WriteLayout.SQLInputFieldComponent.View.GetText()
+		tui.executeWriteQuery(inputQuery)
+	})
 }
 
-func (tui *TUI) showError(err error) {
+func (tui *TUI) showReadSQLError(err error) {
 	tui.queueUpdateDraw(func() {
 		tui.PageComponent.ReadLayout.SQLOutputFieldComponent.SetError(err)
+		go time.AfterFunc(3*time.Second, tui.resetMessage)
+	})
+}
+
+func (tui *TUI) showWriteSQLError(err error) {
+	tui.queueUpdateDraw(func() {
+		tui.PageComponent.WriteLayout.SQLOutputFieldComponent.SetError(err)
 		go time.AfterFunc(3*time.Second, tui.resetMessage)
 	})
 }
@@ -222,5 +260,6 @@ func (tui *TUI) showError(err error) {
 func (tui *TUI) resetMessage() {
 	tui.queueUpdateDraw(func() {
 		tui.PageComponent.ReadLayout.SQLOutputFieldComponent.Clear()
+		tui.PageComponent.WriteLayout.SQLOutputFieldComponent.Clear()
 	})
 }

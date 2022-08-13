@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -42,5 +43,20 @@ func scanRows(rows *sql.Rows) (data [][]*string, err error) {
 		data = append(data, row)
 	}
 
+	return
+}
+
+/*
+====================
+Format query result
+====================
+*/
+func format(res sql.Result) (successMessage string, err error) {
+	affectedRowsCount, err := res.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	successMessage = fmt.Sprintf("Query OK, %d rows affected", affectedRowsCount)
 	return
 }

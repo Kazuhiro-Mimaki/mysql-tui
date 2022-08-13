@@ -25,9 +25,25 @@ func NewPageComponent() *PageComponent {
 	pageView.AddPage("Read", rFlex, true, true)
 	pageView.AddPage("Write", wFlex, true, false)
 
-	return &PageComponent{
+	p := &PageComponent{
 		View:        pageView,
 		ReadLayout:  rLayout,
 		WriteLayout: wLayout,
+	}
+
+	return p
+}
+
+/*
+====================
+Set event key config
+====================
+*/
+func (p *PageComponent) SwitchPage() {
+	page, _ := p.View.GetFrontPage()
+	if page == "Read" {
+		p.View.SwitchToPage("Write")
+	} else {
+		p.View.SwitchToPage("Read")
 	}
 }
