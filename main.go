@@ -98,6 +98,7 @@ Select database
 func (tui *TUI) selectDatabase(selectedDB string) {
 	tui.queueUpdateDraw(func() {
 		tables := tui.mysql.ShowTables(selectedDB)
+
 		tui.TableListComponent.SetTableListView(tables)
 	})
 }
@@ -114,7 +115,7 @@ func (tui *TUI) selectTable(selectedTable string) {
 			Records: tui.mysql.GetRecords(selectedTable),
 		}
 
-		tui.TableGridComponent.SetTableView(tableData)
+		tui.TableGridComponent.SetTable(tableData)
 	})
 }
 
@@ -135,7 +136,7 @@ func (tui *TUI) executeQuery(query string) {
 			Records: records,
 		}
 
-		tui.TableGridComponent.SetTableView(tableData)
+		tui.TableGridComponent.SetTable(tableData)
 	})
 }
 

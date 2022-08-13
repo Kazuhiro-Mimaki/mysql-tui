@@ -1,14 +1,16 @@
 package ui
 
 import (
+	table "tui-dbms/ui/table"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type TableGridComponent struct {
 	View    *tview.Pages
-	Schemas *tview.Table
-	Records *tview.Table
+	Schemas *table.TableSchemas
+	Records *table.TableRecords
 }
 
 type TableData struct {
@@ -23,17 +25,17 @@ Initialize table grid
 */
 func NewTableGridComponent() *TableGridComponent {
 	var pageView = tview.NewPages()
-	var schemaTable = tview.NewTable().SetSelectable(true, true)
-	var recordTable = tview.NewTable().SetSelectable(true, true)
+	var tableSchemas = table.NewTableSchemas()
+	var tableRecords = table.NewTableRecords()
 
 	pageView.SetBorder(true)
-	pageView.AddPage("Schemas", schemaTable, true, false)
-	pageView.AddPage("Records", recordTable, true, true)
+	pageView.AddPage("Schemas", tableSchemas.View, true, false)
+	pageView.AddPage("Records", tableRecords.View, true, true)
 
 	var tbg = &TableGridComponent{
 		View:    pageView,
-		Schemas: schemaTable,
-		Records: recordTable,
+		Schemas: tableSchemas,
+		Records: tableRecords,
 	}
 
 	tbg.setEventKey()
@@ -46,44 +48,9 @@ func NewTableGridComponent() *TableGridComponent {
 Set new table view
 ====================
 */
-func (tbg *TableGridComponent) SetTableView(tableData TableData) {
-	tbg.SetTableData(tbg.Schemas, tableData.Schemas)
-	tbg.SetTableData(tbg.Records, tableData.Records)
-}
-
-/*
-====================
-Set new table data
-====================
-*/
-func (tbg *TableGridComponent) SetTableData(targetGrid *tview.Table, data [][]*string) {
-	targetGrid.Clear().ScrollToBeginning()
-
-	for i, row := range data {
-		for j, col := range row {
-			var cellValue string
-			var cellColor = tcell.ColorWhite
-			var notSelectable = false
-
-			if col != nil {
-				cellValue = *col
-			}
-
-			// top(column names)
-			if i == 0 {
-				cellColor = tcell.ColorNavy
-			}
-
-			targetGrid.SetCell(
-				i, j,
-				&tview.TableCell{
-					Text:          cellValue,
-					Color:         cellColor,
-					NotSelectable: notSelectable,
-				},
-			)
-		}
-	}
+func (tbg *TableGridComponent) SetTable(data TableData) {
+	tbg.Schemas.SetData(data.Schemas)
+	tbg.Records.SetData(data.Records)
 }
 
 /*
