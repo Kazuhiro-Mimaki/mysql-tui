@@ -22,7 +22,6 @@ type TUI struct {
 	DBDropDownComponent *ui.DBDropDownComponent
 	TableListComponent  *ui.TableListComponent
 	PageComponent       *ui.PageComponent
-	Flex                *ui.FlexLayout
 }
 
 /*
@@ -31,9 +30,30 @@ main
 ====================
 */
 func main() {
-	tui := NewTui()
+	mysql := mysql.NewMySQL("")
 
-	if err := tui.App.SetRoot(tui.Flex.Main, true).EnableMouse(false).Run(); err != nil {
+	tui := NewTui(
+		tview.NewApplication(),
+		mysql,
+		ui.NewDBDropDownComponent(mysql.ShowDatabases()),
+		ui.NewTableListComponent(),
+		ui.NewPageComponent(),
+	)
+
+	leftLayout := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(tui.DBDropDownComponent.View, 0, 1, true).
+		AddItem(tui.TableListComponent.View, 0, 15, false)
+
+	rightLayout := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(tui.PageComponent.View, 0, 1, false)
+
+	mainLayout := tview.NewFlex().
+		AddItem(leftLayout, 0, 1, true).
+		AddItem(rightLayout, 0, 7, true)
+
+	if err := tui.App.SetRoot(mainLayout, true).EnableMouse(false).Run(); err != nil {
 		log.Println(err)
 	}
 }
@@ -43,23 +63,20 @@ func main() {
 Initialize tui
 ====================
 */
-func NewTui() *TUI {
+func NewTui(
+	App *tview.Application,
+	mysql *mysql.MySQL,
+	DBDropDownComponent *ui.DBDropDownComponent,
+	TableListComponent *ui.TableListComponent,
+	PageComponent *ui.PageComponent,
+) *TUI {
 	tui := &TUI{
-		App:   tview.NewApplication(),
-		mysql: mysql.NewMySQL(""),
+		App:                 App,
+		mysql:               mysql,
+		DBDropDownComponent: DBDropDownComponent,
+		TableListComponent:  TableListComponent,
+		PageComponent:       PageComponent,
 	}
-
-	databases := tui.mysql.ShowDatabases()
-
-	tui.DBDropDownComponent = ui.NewDBDropDownComponent(databases)
-	tui.TableListComponent = ui.NewTableListComponent()
-	tui.PageComponent = ui.NewPageComponent()
-
-	tui.Flex = ui.NewMainFlex(
-		tui.DBDropDownComponent.View,
-		tui.TableListComponent.View,
-		tui.PageComponent.View,
-	)
 
 	tui.setEventKey()
 	tui.setEventFunction()
